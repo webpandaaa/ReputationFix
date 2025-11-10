@@ -210,6 +210,7 @@ const RowItem = ({ item }) => (
 // ---------- Main Component ----------
 export default function ReputationFixApp() {
   const [query, setQuery] = useState("");
+  const [ergoMode, setErgoMode] = useState("insurance"); // "insurance" | "employer"
   const [selectedPlatforms, setSelectedPlatforms] = useState(platforms.map((p) => p.key));
   const [range, setRange] = useState("7d");
   const [lang, setLang] = useState("auto");
@@ -279,14 +280,14 @@ export default function ReputationFixApp() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="sticky top-0 z-20 backdrop-blur supports-backdrop-filter:bg-white/70 bg-white border-b border-slate-200">
+      <header className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white border-b border-slate-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-xl bg-slate-900 text-white grid place-items-center font-bold">RF</div>
               <div>
                 <div className="text-slate-900 font-semibold leading-tight">ReputationFix</div>
-                <div className="text-xs text-slate-500 -mt-0.5">Online Reputation Monitoring</div>
+                <div className="text-xs text-slate-500 -mt-0.5">ERGO — {ergoMode === "insurance" ? "Insurance" : "Employer"} view</div>
               </div>
             </div>
 
@@ -294,6 +295,30 @@ export default function ReputationFixApp() {
               <button onClick={saveSearch} className="rounded-lg px-3 py-2 text-sm font-medium ring-1 ring-slate-200 hover:bg-slate-100">Save search</button>
               <button onClick={exportAll} className="rounded-lg px-3 py-2 text-sm font-medium bg-slate-900 text-white hover:bg-slate-800">Export CSV</button>
             </div>
+          </div>
+        </div>
+
+        {/* Mode Switch */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 pb-3">
+          <div className="mt-2 inline-flex rounded-2xl bg-slate-100 p-1 ring-1 ring-slate-200">
+            <button
+              onClick={() => setErgoMode("insurance")}
+              className={classNames(
+                "px-3 sm:px-4 py-1.5 text-sm rounded-xl",
+                ergoMode === "insurance" ? "bg-white shadow-sm text-slate-900" : "text-slate-600"
+              )}
+            >
+              ERGO as Insurance
+            </button>
+            <button
+              onClick={() => setErgoMode("employer")}
+              className={classNames(
+                "px-3 sm:px-4 py-1.5 text-sm rounded-xl",
+                ergoMode === "employer" ? "bg-white shadow-sm text-slate-900" : "text-slate-600"
+              )}
+            >
+              ERGO as Employer
+            </button>
           </div>
         </div>
       </header>
@@ -308,8 +333,9 @@ export default function ReputationFixApp() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="something"
-                className="w-full px-4 py-2.5 outline-none text-slate-800 placeholder:text-slate-400"/>
+                placeholder= " Ergo"
+                className="w-full px-4 py-2.5 outline-none text-slate-800 placeholder:text-slate-400"
+              />
               <button
                 onClick={handleSearch}
                 className="px-4 py-2.5 text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800"
@@ -444,52 +470,59 @@ export default function ReputationFixApp() {
         </div>
 
         {/* Result sections */}
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          {/* News */}
-          <SectionCard title="News" count={data.news?.length} hint="e.g., Times of India, Economic Times, etc.">
-            {loading ? <RowsSkeleton /> : data.news?.length ? (
-              <div className="space-y-3">
-                {data.news.map((it) => <RowItem key={it.id} item={it} />)}
-              </div>
-            ) : <Empty label="No news yet" />}
-          </SectionCard>
+        {ergoMode === "insurance" ? (
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <SectionCard title="News (Insurance)" count={data.news?.length} hint="Claims, policy updates, IRDAI/regulatory mentions.">
+              {loading ? <RowsSkeleton /> : data.news?.length ? (
+                <div className="space-y-3">{data.news.map((it) => <RowItem key={it.id} item={it} />)}</div>
+              ) : <Empty label="No insurance news yet" />}
+            </SectionCard>
 
-          {/* YouTube */}
-          <SectionCard title="YouTube" count={data.youtube?.length} hint="Sort by likes/comments to triage quickly.">
-            {loading ? <RowsSkeleton /> : data.youtube?.length ? (
-              <div className="space-y-3">
-                {data.youtube.map((it) => <RowItem key={it.id} item={it} />)}
-              </div>
-            ) : <Empty label="No videos yet" />}
-          </SectionCard>
+            <SectionCard title="YouTube (Insurance)" count={data.youtube?.length} hint="Explainers, claim stories, review videos.">
+              {loading ? <RowsSkeleton /> : data.youtube?.length ? (
+                <div className="space-y-3">{data.youtube.map((it) => <RowItem key={it.id} item={it} />)}</div>
+              ) : <Empty label="No videos yet" />}
+            </SectionCard>
 
-          {/* X / Twitter */}
-          <SectionCard title="X / Twitter" count={data.twitter?.length} hint="Track virality and reply from your CRM.">
-            {loading ? <RowsSkeleton /> : data.twitter?.length ? (
-              <div className="space-y-3">
-                {data.twitter.map((it) => <RowItem key={it.id} item={it} />)}
-              </div>
-            ) : <Empty label="No tweets yet" />}
-          </SectionCard>
+            <SectionCard title="X / Twitter (Insurance)" count={data.twitter?.length} hint="Escalations, praise, real‑time support threads.">
+              {loading ? <RowsSkeleton /> : data.twitter?.length ? (
+                <div className="space-y-3">{data.twitter.map((it) => <RowItem key={it.id} item={it} />)}</div>
+              ) : <Empty label="No tweets yet" />}
+            </SectionCard>
 
-          {/* Reddit */}
-          <SectionCard title="Reddit" count={data.reddit?.length} hint="Communities often surface detailed user feedback.">
-            {loading ? <RowsSkeleton /> : data.reddit?.length ? (
-              <div className="space-y-3">
-                {data.reddit.map((it) => <RowItem key={it.id} item={it} />)}
-              </div>
-            ) : <Empty label="No reddit posts yet" />}
-          </SectionCard>
+            <SectionCard title="Web Mentions (Insurance)" count={data.web?.length} hint="Blogs, forums, news aggregators.">
+              {loading ? <RowsSkeleton /> : data.web?.length ? (
+                <div className="space-y-3">{data.web.map((it) => <RowItem key={it.id} item={it} />)}</div>
+              ) : <Empty label="No web mentions yet" />}
+            </SectionCard>
+          </div>
+        ) : (
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <SectionCard title="News (Employer)" count={data.news?.length} hint="Hiring drives, awards, HR policy updates.">
+              {loading ? <RowsSkeleton /> : data.news?.length ? (
+                <div className="space-y-3">{data.news.map((it) => <RowItem key={it.id} item={it} />)}</div>
+              ) : <Empty label="No employer news yet" />}
+            </SectionCard>
 
-          {/* Web Mentions */}
-          <SectionCard title="Web Mentions" count={data.web?.length} hint="Blogs, forums, small news sites, etc.">
-            {loading ? <RowsSkeleton /> : data.web?.length ? (
-              <div className="space-y-3">
-                {data.web.map((it) => <RowItem key={it.id} item={it} />)}
-              </div>
-            ) : <Empty label="No web mentions yet" />}
-          </SectionCard>
-        </div>
+            <SectionCard title="YouTube (Employer)" count={data.youtube?.length} hint="Work culture, interview experiences, events.">
+              {loading ? <RowsSkeleton /> : data.youtube?.length ? (
+                <div className="space-y-3">{data.youtube.map((it) => <RowItem key={it.id} item={it} />)}</div>
+              ) : <Empty label="No videos yet" />}
+            </SectionCard>
+
+            <SectionCard title="X / Twitter (Employer)" count={data.twitter?.length} hint="Employee chatter & recruiting posts.">
+              {loading ? <RowsSkeleton /> : data.twitter?.length ? (
+                <div className="space-y-3">{data.twitter.map((it) => <RowItem key={it.id} item={it} />)}</div>
+              ) : <Empty label="No tweets yet" />}
+            </SectionCard>
+
+            <SectionCard title="Web Mentions (Employer)" count={data.web?.length} hint="Glassdoor/Indeed blogs, alumni forums.">
+              {loading ? <RowsSkeleton /> : data.web?.length ? (
+                <div className="space-y-3">{data.web.map((it) => <RowItem key={it.id} item={it} />)}</div>
+              ) : <Empty label="No web mentions yet" />}
+            </SectionCard>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
@@ -554,3 +587,4 @@ function StackedBar({ items }) {
     </div>
   );
 }
+  
